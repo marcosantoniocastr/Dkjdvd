@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráfico Interactivo</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        #graphContainer {
+            width: 80%;
+            margin: 0 auto;
+        }
+        canvas {
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        #controls {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap; /* Permite que los controles se envuelvan en pantallas más pequeñas */
+        }
+        label {
+            margin-right: 10px;
+        }
+        input[type="number"] {
+            width: 60px;
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s; /* Transición suave para el color de fondo */
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #slopeExplanation {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 8px;
+        }
+        @media (max-width: 600px) {
+            #controls {
+                flex-direction: column; /* Cambia a una columna en pantallas más pequeñas */
+                align-items: center; /* Centra los elementos */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Gráfico Interactivo de Pendiente</h1>
+    <div id="graphContainer">
+        <canvas id="myChart" width="400" height="200"></canvas>
+    </div>
+
+    <div id="controls">
+        <div>
+            <label for="x1">Punto 1 X:</label>
+            <input type="number" id="x1" value="2" min="0" max="10">
+            <label for="y1">Y:</label>
+            <input type="number" id="y1" value="3" min="0" max="10">
+        </div>
+        <div>
+            <label for="x2">Punto 2 X:</label>
+            <input type="number" id="x2" value="7" min="0" max="10">
+            <label for="y2">Y:</label>
+            <input type="number" id="y2" value="6" min="0" max="10">
+        </div>
+        <button id="updateButton">Actualizar Puntos</button>
+    </div>
+
+    <div id="slopeExplanation">
+        <h3>¿Qué es la Pendiente?</h3>
+        <p id="slopeText">
+            La pendiente (m) de una línea es una medida de su inclinación. Se calcula
+            como el cambio en la altura (eje Y) dividido por el cambio en la distancia 
+            horizontal (eje X). En otras palabras, te dice cuántas unidades sube 
+            o baja la línea por cada unidad que avanza horizontalmente. 
+            Una pendiente positiva indica que la línea sube de izquierda a derecha, 
+            mientras que una pendiente negativa indica que baja. Si la pendiente es cero, 
+            significa que la línea es horizontal.
+        </p>
+        <button id="readSlopeText">Leer Texto</button>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('myChart').getContext('2d');
+        let chart;
+
+        // Función para actualizar el gráfico
+        const updateChart = (x1, y1, x2, y2) => {
+            const slope = (y2 - y1) / (x2 - x1).toFixed(2); // Cálculo de la pendiente
+            const data = {
+                labels: [x1, x2],
+                datasets: [{
+                    label: 'Pendiente',
+                    data: [y1, y2],
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    fill: false,
+                    pointRadius: 5,
+                    pointBackgroundColor: 'rgba(75, 192, 192, 1)',
+                }]
+            };
+
+            // Destruir gráfico previo si existe
+            if (chart) {
+                chart.destroy();
+            }
+
+            // Crear nuevo gráfico
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: data,
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Valor Y'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Valor X'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                        }
+                    }
+                }
+            });
+
+            // Actualizar fórmula de pendiente (m)
+            document.getElementById("slopeFormula").textContent = `Pendiente m = (${y2} - ${y1}) / (${x2} - ${x1}) = ${slope}`;
+        };
+
+        // Listener para el botón de actualizar
+        document.getElementById("updateButton").addEventListener("click", function() {
+            const x1 = parseFloat(document.getElementById("x1").value);
+            const y1 = parseFloat(document.getElementById("y1").value);
+            const x2 = parseFloat(document.getElementById("x2").value);
+            const y2 = parseFloat(document.getElementById("y2").value);
+            updateChart(x1, y1, x2, y2);
+        });
+
+        // Listener para leer el texto de la pendiente
+        document.getElementById("readSlopeText").addEventListener("click", function() {
+            const text = document.getElementById("slopeText").innerText;
+            const utterance = new SpeechSynthesisUtterance(text);
+            speechSynthesis.speak(utterance);
+        });
+
+        // Inicializa el gráfico con valores predeterminados
+        updateChart(2, 3, 7, 6);
+    </script>
+
+</body>
+</html>
